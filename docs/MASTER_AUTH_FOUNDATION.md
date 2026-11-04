@@ -10,14 +10,14 @@
 ## Pré-requisitos de ativação
 1. Garantir que o repositório esteja privado (recomendado para este produto).
 2. Configurar o projeto Supabase CRM já criado: `mpteambmrlflllfqtkmq`.
-3. Criar `platform_staff` e suas políticas por migração revisada e testada (ver SQL proposto abaixo).
+3. **Concluído:** tabela `platform_staff` com RLS e SELECT restrito ao próprio usuário, criada no projeto CRM exclusivo.
 4. Criar conta do operador via painel Auth no Supabase, com e-mail confirmado; NÃO habilitar cadastro público no app.
 5. Associar o UUID de `auth.users` da conta autorizada a `platform_staff` com role MASTER por ação administrativa auditada.
 6. Definir `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` em `.env.local` (nunca publicar o arquivo). Não são necessárias secret keys nesta etapa.
 7. Rodar testes reais de login correto, senha errada, conta sem role, role desabilitada e logout.
 
-## SQL de referência — não executado
-Este bloco só deve ser aplicado após revisão e geração formal de migration via Supabase CLI.
+## SQL da migration — já aplicado no projeto CRM exclusivo (2026-11-04)
+A migration `supabase/migrations/20261104170200_crm_master_staff_secure_foundation.sql` reflete a aplicação remota verificada. **Não execute esse SQL novamente no projeto remoto**. Em uma instalação nova, aplique-o pelo fluxo normal de migrations.
 
 ```sql
 create table if not exists public.platform_staff (
@@ -39,7 +39,16 @@ grant select on public.platform_staff to authenticated;
 **Não execute cadastro automático de MASTER; sem usuários criados automaticamente.** O backend administrativo futuro deve validar o papel no servidor novamente em cada ação privilegiada; rotas de UI não bastam como proteção.
 
 ## Limitações
-As telas de Master não consultam empresas ou mensagens reais: os contadores usam travessões. Até executar a migração e cadastrar o usuário Master, /master permanece sem acesso. Interface inicial continua pública por ser apenas demonstração fictícia.
+As telas de Master não consultam empresas ou mensagens reais: os contadores usam travessões. A migração já foi executada e a tabela está vazia. Até cadastrar e habilitar explicitamente um usuário Master, /master permanece sem acesso. Interface inicial continua pública por ser apenas demonstração fictícia.
 
 ## Testes de integração pendentes
 Sem credenciais nem dados de usuário, o CI consegue validar compilação do fluxo, mas não consegue provar autenticação real ou isolamento de tenants.
+
+## Verificação remota realizada
+- Supabase: projeto `mpteambmrlflllfqtkmq` (Novaesweb's Org, sa-east-1).
+- Migration: `20261104170200_crm_master_staff_secure_foundation`.
+- RLS habilitada: sim.
+- anon SELECT: não; authenticated SELECT: sim, filtrado por policy própria; INSERT/UPDATE/DELETE authenticated: não.
+- Registros administrativos: zero.
+- Security advisors: nenhum aviso.
+- **Pendente:** conta Auth real do proprietário, inclusão administrativa explícita e testes reais de sessão; não registrar e-mail/senha ou tokens no repositório.
