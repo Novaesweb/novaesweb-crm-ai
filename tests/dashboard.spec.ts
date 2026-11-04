@@ -23,7 +23,7 @@ test("desktop: estrutura, busca, filtro e envio simulado", async ({ page }) => {
   const message = page.getByRole("textbox", { name: "Mensagem", exact: true });
   await message.fill("Mensagem de teste local");
   await page.getByRole("button", { name: "Adicionar mensagem à simulação" }).click();
-  await expect(page.getByText("Mensagem de teste local")).toBeVisible();
+  await expect(page.locator(".message-bubble p").filter({ hasText: "Mensagem de teste local" })).toBeVisible();
   await expect(page.getByRole("status")).toContainText("Nenhum WhatsApp foi acionado");
 });
 
