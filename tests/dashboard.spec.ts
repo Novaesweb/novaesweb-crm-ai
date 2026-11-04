@@ -32,6 +32,7 @@ for (const width of [1920, 1366, 768, 390, 360]) {
     await page.setViewportSize({ width, height: width < 800 ? 844 : 900 });
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+    await page.screenshot({ path: `screenshots/dashboard-${width}.png`, fullPage: true, animations: "disabled" });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     expect(overflow, "A página não deve ultrapassar a largura da viewport").toBe(false);
     if (width <= 768) {
@@ -40,6 +41,5 @@ for (const width of [1920, 1366, 768, 390, 360]) {
       await page.getByRole("button", { name: "Contatos" }).click();
       await expect(page.getByRole("status")).toContainText("Contatos");
     }
-    await page.screenshot({ path: `screenshots/dashboard-${width}.png`, fullPage: true });
   });
 }
