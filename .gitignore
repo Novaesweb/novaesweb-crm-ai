@@ -33,3 +33,8 @@ logs/
 Thumbs.db
 .vscode/
 .idea/
+
+# Browser test outputs
+screenshots/
+test-results/
+playwright-report/
