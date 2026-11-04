@@ -80,7 +80,6 @@ export default function Dashboard() {
   const [agentEnabled, setAgentEnabled] = useState(true);
   const [companyMenu, setCompanyMenu] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [masterView, setMasterView] = useState(false);
 
   const chat = chats.find(c => c.id === selectedId) ?? chats[0];
   const filtered = useMemo(() => chats.filter(c => {
@@ -129,7 +128,7 @@ export default function Dashboard() {
       </nav>
       <div className="sidebar-footer">
         <span className="footer-label">Painel Master</span>
-        <button className="master-card" onClick={() => {setMasterView(!masterView);setNotice("Painel Master: acesso demonstrativo, sem dados reais.");}}>
+        <button className="master-card" onClick={() => { window.location.assign("/master"); }}>
           <Crown size={24} className="master-crown"/>
           <span><strong>Painel Master</strong><small>Gestão da plataforma,<br/> clientes e consumo.</small></span>
           <ChevronRight size={18}/>
@@ -142,7 +141,7 @@ export default function Dashboard() {
       <header className="topbar">
         <div className="heading-group">
           <button className="icon-button menu-button" onClick={() => setMenuOpen(true)} aria-label="Abrir menu"><Menu size={22}/></button>
-          <div><h1>{masterView ? "Painel Master" : nav === "Dashboard" || nav === "Atendimentos" ? "Dashboard" : nav}</h1><p>Visão geral do seu CRM e agentes de atendimento</p></div>
+          <div><h1>{nav === "Dashboard" || nav === "Atendimentos" ? "Dashboard" : nav}</h1><p>Visão geral do seu CRM e agentes de atendimento</p></div>
         </div>
         <div className="top-actions">
           <div className="company-control">
