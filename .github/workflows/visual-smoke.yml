@@ -1,0 +1,42 @@
+name: CRM visual and interaction smoke tests
+
+on:
+  push:
+    branches:
+      - feat/dashboard-image-to-nextjs
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  visual-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
+      - name: Run browser tests and capture screenshots
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+      - name: Upload screenshots and test traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crm-dashboard-visual-smoke
+          path: |
+            screenshots/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7
