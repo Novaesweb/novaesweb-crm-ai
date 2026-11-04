@@ -6,7 +6,7 @@ test("desktop: estrutura, busca, filtro e envio simulado", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   await expect(page.getByText("Caixa de Entrada")).toBeVisible();
   await expect(page.getByText("Ana Souza").first()).toBeVisible();
-  await expect(page.getByText("Prévia visual do produto")).toHaveCount(0);
+  await expect(page.getByText("Prévia visual do produto")).not.toBeVisible();
   await page.screenshot({ path: "screenshots/dashboard-1648.png", fullPage: true });
 
   const search = page.getByRole("textbox", { name: "Buscar conversas" });
@@ -36,7 +36,7 @@ for (const width of [1920, 1366, 768, 390, 360]) {
     expect(overflow, "A página não deve ultrapassar a largura da viewport").toBe(false);
     if (width <= 768) {
       await page.getByRole("button", { name: "Abrir menu" }).click();
-      await expect(page.getByRole("navigation", { name: "Navegação principal" })).toBeVisible();
+      await expect(page.locator("aside[aria-label=\"Navegação principal\"]")).toBeVisible();
       await page.getByRole("button", { name: "Contatos" }).click();
       await expect(page.getByRole("status")).toContainText("Contatos");
     }
