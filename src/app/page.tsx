@@ -2,13 +2,12 @@
 
 import { useMemo, useState } from "react";
 import {
-  Activity, Bell, Bot, Building2, Check, CheckCircle2, ChevronDown,
-  ChevronRight, Clock3, Crown, Headphones, Home, Inbox, LayoutDashboard,
-  Menu, MessageCircle, MoreHorizontal, Paperclip, Plus, Search, Send,
-  Settings2, ShieldCheck, Smile, Sparkles, Tag, UserRound, UserRoundPlus,
-  UsersRound, WandSparkles, X, ChartNoAxesColumnIncreasing, Zap,
-  CircleHelp, Megaphone, Workflow, Smartphone, CalendarDays, Mic,
-  LogOut, Command, ArrowUpRight, CheckCheck
+  Bell, Bot, Building2, Check, CheckCircle2, ChevronDown, ChevronRight,
+  Clock3, Crown, Headphones, LayoutDashboard, Menu, MessageCircle,
+  MoreHorizontal, Paperclip, Plus, Search, Send, Settings2, Smile,
+  Sparkles, Tag, UserRound, UserRoundPlus, UsersRound, X,
+  ChartNoAxesColumnIncreasing, CircleHelp, Megaphone, Workflow, Smartphone, Mic,
+  CheckCheck
 } from "lucide-react";
 
 type Chat = { id: number; name: string; initials: string; color: string; preview: string; time: string; unread: number; mode: "IA" | "Humano"; messages: { id: number; from: "contact" | "agent" | "human"; text: string; time: string }[] };
