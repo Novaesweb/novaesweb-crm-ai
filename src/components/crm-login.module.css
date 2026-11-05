@@ -1,0 +1,85 @@
+.scene {
+  --violet:#ad52f9;
+  position:relative;isolation:isolate;display:flex;align-items:flex-start;justify-content:center;
+  min-height:100svh;padding:clamp(36px,8vh,110px) 20px 90px;
+  overflow:hidden;color:#fbf7ff;
+  background:radial-gradient(ellipse 52% 40% at 83% 2%,#42115e85,transparent 75%),
+    radial-gradient(ellipse 64% 49% at 14% 83%,#310b4f9c,transparent 76%),
+    linear-gradient(142deg,#100a20 6%,#170c28 46%,#1a0a2b 100%);
+}
+.ambientTop,.ambientBottom{position:absolute;pointer-events:none;z-index:-1;opacity:.78;}
+.ambientTop{top:-35%;right:-39%;width:92vw;max-width:1400px;aspect-ratio:1;border:1.5px solid #9a30ea;border-radius:48%;transform:rotate(-29deg);box-shadow:0 0 68px #9f2ee819;}
+.ambientBottom{bottom:-44%;left:-50%;width:105vw;max-width:1400px;aspect-ratio:1;border-top:2px solid #a83ffa;border-radius:50%;transform:rotate(26deg);box-shadow:0 -18px 80px #a92df970;}
+.frame{width:min(100%,800px);display:flex;flex-direction:column;align-items:center;gap:clamp(42px,6vh,74px)}
+.brand{display:flex;align-items:center;justify-content:center;gap:17px;min-width:0;width:100%;}
+.brandMark{display:grid;place-items:center;flex:0 0 auto;width:69px;height:69px;border-radius:17px;background:linear-gradient(135deg,#da65fa 3%,#b338ef 48%,#6a22d5 100%);box-shadow:0 13px 33px #57108d30;font-size:50px;line-height:1;font-weight:900;letter-spacing:-4px;padding-right:3px;}
+.brandName{font-weight:800;font-size:clamp(29px,4vw,46px);letter-spacing:-1.9px;white-space:nowrap;}
+.brandBadge{font-weight:700;font-size:clamp(13px,2.2vw,20px);white-space:nowrap;border-radius:17px;padding:11px 17px;background:linear-gradient(110deg,#742bad,#51218a);}
+.card{
+ width:100%;border:1.5px solid #9851c4;border-radius:34px;
+ background:radial-gradient(ellipse 83% 51% at 0% 0%,#63347d52,transparent 76%),
+ linear-gradient(150deg,#24172fdb,#1c122bcf 63%,#211129dd);
+ padding:clamp(30px,5vw,56px);box-shadow:0 26px 95px #06020f66,inset 0 1px 0 #f1b2ff29,0 0 35px #9233d218;
+ display:flex;flex-direction:column;align-items:center;
+ backdrop-filter:blur(12px);
+}
+.lockIcon{display:grid;place-items:center;width:98px;height:98px;border-radius:29px;border:1px solid #8955ad;background:radial-gradient(ellipse at 37% 18%,#6e368f66,#2a173e 84%);color:#d28aff;box-shadow:0 0 24px #b244f43a,inset 0 1px #eebcff29;}
+.card h1{margin:31px 0 15px;font-size:clamp(32px,5vw,53px);font-weight:800;line-height:1.18;letter-spacing:-1.9px;text-align:center;}
+.description{margin:0 auto;text-align:center;max-width:600px;font-size:clamp(15px,2.4vw,21px);line-height:1.6;color:#dfd0f0;}
+.form{display:flex;flex-direction:column;gap:25px;margin:43px 0 0;width:100%;}
+.field{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.field label{color:#faf3ff;font-size:clamp(15px,2.1vw,19px);font-weight:700;}
+.inputShell{display:flex;align-items:center;gap:16px;height:72px;padding:0 19px;border-radius:16px;background:#100b1cbd;border:1.5px solid #79548d;transition:border-color .16s,box-shadow .16s;min-width:0;}
+.inputShell:focus-within{border-color:#d28aff;box-shadow:0 0 0 3px #b744ee38;}
+.inputShell>svg{flex:0 0 auto;color:#d5bbec;}
+.inputShell input{width:100%;min-width:0;flex:1;background:transparent;border:0;outline:0;color:#fff;font:inherit;font-size:clamp(16px,2.2vw,20px);height:100%;}
+.inputShell input::placeholder{color:#9a8aaa;opacity:1;}
+.inputShell input:focus-visible{outline:0;}
+.eyeButton{display:grid;place-items:center;background:transparent;border:0;padding:8px;flex:0 0 auto;color:#dec8f4;border-radius:8px;}
+.eyeButton:hover,.eyeButton:focus-visible{color:#fff;background:#5d317637;}
+.forgot{align-self:flex-end;background:none;border:0;color:#cb80fb;font-size:clamp(15px,2.2vw,19px);padding:0 0 4px;text-decoration:underline;text-underline-offset:5px;margin-top:-4px;}
+.forgot:hover{color:#edc2ff;}
+.submit{display:flex;justify-content:center;align-items:center;gap:15px;min-height:78px;width:100%;padding:17px;border:1px solid #b869f9;border-radius:19px;background:linear-gradient(116deg,#c448ef,#8e24dc 52%,#6817be);box-shadow:inset 0 1px #fad8ff9d,0 12px 32px #670eaf4d;color:white;font-size:clamp(20px,3vw,27px);font-weight:800;transition:filter .16s,transform .16s;}
+.submit:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px);}
+.submit:disabled{opacity:.55;box-shadow:none;}
+.alert,.success{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:12px;line-height:1.5;font-size:14px;margin:0;}
+.alert{background:#3b1b2c;border:1px solid #99506e;color:#ffd2d9;}
+.success{background:#14342f;border:1px solid #3f9786;color:#bdf4e4;}
+.alert svg,.success svg{flex-shrink:0;margin-top:2px;}
+.back{align-self:center;background:transparent;border:0;color:#dcb1ff;text-decoration:underline;text-underline-offset:4px;font-size:15px;}
+.securityNote{display:flex;align-items:center;gap:22px;width:100%;border-top:1px solid #5c3b7080;margin-top:42px;padding:32px 8px 1px;color:#d3c6e2;font-size:clamp(14px,2vw,18px);line-height:1.6;}
+.securityNote svg{flex:0 0 auto;color:#be71f0;}
+.spin{animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+ .scene{padding:clamp(25px,6vh,55px) 15px 70px;}
+ .frame{gap:clamp(34px,6vh,58px)}
+ .brand{gap:10px;}
+ .brandMark{width:48px;height:48px;font-size:35px;border-radius:12px;}
+ .brandName{font-size:clamp(23px,6vw,33px);letter-spacing:-1.1px;}
+ .brandBadge{font-size:12px;padding:7px 10px;border-radius:10px;}
+ .card{border-radius:23px;padding:29px 22px 30px;}
+ .lockIcon{width:68px;height:68px;border-radius:21px;}
+ .lockIcon svg{width:29px;height:29px;}
+ .card h1{font-size:34px;letter-spacing:-1px;margin:22px 0 13px;}
+ .description{font-size:14px;line-height:1.65;}
+ .form{gap:21px;margin-top:29px;}
+ .field label{font-size:15px;}
+ .inputShell{height:58px;padding:0 14px;gap:11px;border-radius:12px;}
+ .inputShell input{font-size:16px;}
+ .inputShell>svg{width:19px;height:19px;}
+ .forgot{font-size:14px;}
+ .submit{min-height:61px;border-radius:14px;font-size:21px;}
+ .securityNote{margin-top:29px;padding:24px 0 0;gap:12px;font-size:12px;}
+ .securityNote svg{width:22px;height:22px;}
+ .ambientBottom{bottom:-15%;left:-85%;width:170vw;}
+}
+@media(max-width:375px){
+ .scene{padding-inline:10px}
+ .card{padding:25px 18px 26px}
+ .brandName{font-size:22px}
+ .brandMark{width:43px;height:43px;font-size:31px}
+ .brandBadge{font-size:11px;padding:6px 8px}
+ .card h1{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){.submit,.inputShell{transition:none}.spin{animation:none}}
