@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import CrmLogin from "./crm-login";
 import {
   ArrowLeft, Building2, CheckCircle2, CircleAlert, Inbox, LockKeyhole, LogOut,
   Mail, MessageSquare, RefreshCw, Search, ShieldCheck, Users, UserPlus
@@ -121,6 +122,11 @@ export default function OperatorPage() {
   }),[conversations,byContact,search]);
   const current=filtered.find(c=>c.id===selected)??filtered[0]??null;
   const thread=current?messages.filter(m=>m.conversation_id===current.id).sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)):[];
+  // Login is the only public entry. Keep all CRM data and actions behind the existing session.
+  if (!checking && !authenticated) return <CrmLogin
+    email={email} password={password} onEmailChange={setEmail} onPasswordChange={setPassword}
+    onSignIn={signIn} loading={loading} error={error}
+  />;
   return <div className="op-shell">
     <header className="op-topbar"><div className="op-brand"><span>N</span><strong>NovaesWeb <em>CRM AI</em></strong></div>
       <div className="op-top-actions">{authenticated&&<><Link href="/operator/knowledge" className="op-back">Conhecimento</Link><Link href="/admin" className="op-back">Central Master</Link><Link href="/lab" className="op-back"><ArrowLeft size={16}/> Laboratório técnico</Link></>}
