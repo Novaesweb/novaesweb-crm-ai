@@ -1,7 +1,9 @@
 import type { AgentConfig } from "./config";
 
-export async function sendText(number: string, text: string, cfg: AgentConfig): Promise<void> {
-  const instance = encodeURIComponent(cfg.instance);
+export type EvolutionSendConfig = Pick<AgentConfig, "evolutionUrl" | "evolutionKey" | "instance" | "sendFormat">;
+
+export async function sendText(number: string, text: string, cfg: EvolutionSendConfig, targetInstance?: string): Promise<void> {
+  const instance = encodeURIComponent(targetInstance || cfg.instance);
   const endpoint = `${cfg.evolutionUrl}/message/sendText/${instance}`;
   // Evolution v2 commonly accepts flat `text`; legacy installations can use textMessage.
   const body = cfg.sendFormat === "legacy"
@@ -17,7 +19,11 @@ export async function sendText(number: string, text: string, cfg: AgentConfig): 
       signal: controller.signal,
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`Evolution retornou HTTP ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[evolution-send-error] ${endpoint} -> ${response.status}:`, errorText);
+      throw new Error(`Evolution retornou HTTP ${response.status}: ${errorText}`);
+    }
   } finally {
     clearTimeout(timeout);
   }

@@ -8,14 +8,16 @@
     "start": "next start",
     "lint": "eslint .",
     "test:e2e": "playwright test",
-    "test:agent": "tsx --test src/lib/agent/*.test.ts src/lib/crm/*.test.ts"
+    "test:agent": "tsx --conditions=react-server --test src/lib/agent/*.test.ts src/lib/crm/*.test.ts",
+    "test:governance-db": "node scripts/test-governance-db.mjs"
   },
   "dependencies": {
     "next": "15.5.29",
     "react": "19.1.8",
     "react-dom": "19.1.8",
     "lucide-react": "0.468.0",
-    "ioredis": "5.4.2"
+    "ioredis": "5.4.2",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@types/node": "22.15.30",

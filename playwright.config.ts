@@ -1,16 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const testBaseURL = process.env.CRM_E2E_BASE_URL || "http://127.0.0.1:3000";
+const testPort = new URL(testBaseURL).port || "3000";
+
 export default defineConfig({
   testDir: "./tests",
   timeout: 30_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
   reporter: process.env.CI ? [["list"]] : [["list"], ["html", { open: "never" }]],
-  use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure", screenshot: "only-on-failure" },
+  use: { baseURL: testBaseURL, trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: process.env.CI ? "npm run start" : "npm run dev",
-    url: "http://127.0.0.1:3000",
+    command: process.env.CI ? `npm run start -- --port ${testPort}` : `npm run dev -- --port ${testPort}`,
+    url: testBaseURL,
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },

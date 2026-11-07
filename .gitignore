@@ -38,3 +38,9 @@ Thumbs.db
 screenshots/
 test-results/
 playwright-report/
+
+backups/
+
+
+# Local CLI state
+supabase/.temp/

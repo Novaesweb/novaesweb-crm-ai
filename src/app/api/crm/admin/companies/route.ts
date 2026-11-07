@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
-import { privateJson, supabaseRows, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
+import { isAllowedOrigin, privateJson, supabaseRows, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Staff = {role:string;enabled:boolean};
 export async function POST(request:NextRequest) {
   const origin=request.headers.get("origin");
-  // A JSON POST with Strict SameSite cookies and same-origin verification; reject missing Origin from browsers.
-  if(origin!==new URL(request.url).origin) return privateJson({error:"origin_forbidden"},403);
+  if(!isAllowedOrigin(origin, request.url)) return privateJson({error:"origin_forbidden"},403);
   if(!request.headers.get("content-type")?.includes("application/json"))return privateJson({error:"json_required"},415);
   if(Number(request.headers.get("content-length")??0)>1024)return privateJson({error:"payload_too_large"},413);
   let body:unknown;
@@ -22,10 +21,8 @@ export async function POST(request:NextRequest) {
     if(staff.length!==1||!staff[0].enabled||!["MASTER","ADMINISTRADOR"].includes(staff[0].role))
       return privateJson({error:"forbidden"},403);
     const {url}=supabaseSettings();
-    const secret=process.env.CRM_SUPABASE_SERVICE_ROLE_KEY??"";
+    const secret = (process.env.CRM_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)?.trim() ?? "";
     if(secret.length<30)return privateJson({error:"backend_not_configured"},503);
-    // RPC performs creation, safe defaults and audit in a single database transaction.
-    // The function is not executable by anon/authenticated roles.
     const response=await fetch(url+"/rest/v1/rpc/crm_admin_create_tenant",{
       method:"POST",cache:"no-store",signal:AbortSignal.timeout(8000),
       headers:{apikey:secret,Authorization:"Bearer "+secret,"Content-Type":"application/json"},

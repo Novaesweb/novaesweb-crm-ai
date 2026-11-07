@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import Redis from "ioredis";
 import { NextRequest } from "next/server";
-import { privateJson, verifyOperator } from "@/lib/crm/supabase-server";
+import { isAllowedOrigin, privateJson, verifyOperator } from "@/lib/crm/supabase-server";
 import { authorizeAiLab, freeModelIds } from "@/lib/crm/ai-lab";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -23,7 +23,7 @@ async function underLimits(userId:string):Promise<boolean>{
 }
 
 export async function POST(req:NextRequest){
- if(req.headers.get("origin")!==new URL(req.url).origin)return privateJson({error:"origin_forbidden"},403);
+ if(!isAllowedOrigin(req.headers.get("origin"), req.url))return privateJson({error:"origin_forbidden"},403);
  if(!req.headers.get("content-type")?.includes("application/json"))return privateJson({error:"json_required"},415);
  if(Number(req.headers.get("content-length")??0)>1500)return privateJson({error:"too_large"},413);
  try{

@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import { privateJson, supabaseRows, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
+import { isAllowedOrigin, privateJson, supabaseRows, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 type Staff={role:string;enabled:boolean};
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(request:NextRequest) {
-  if(request.headers.get("origin")!==new URL(request.url).origin) return privateJson({error:"origin_forbidden"},403);
+  if(!isAllowedOrigin(request.headers.get("origin"), request.url)) return privateJson({error:"origin_forbidden"},403);
   if(!request.headers.get("content-type")?.includes("application/json"))return privateJson({error:"json_required"},415);
   if(Number(request.headers.get("content-length")??0)>1024)return privateJson({error:"payload_too_large"},413);
   let body:unknown;
@@ -23,9 +23,8 @@ export async function POST(request:NextRequest) {
     if(staff.length!==1||!staff[0].enabled||!["MASTER","ADMINISTRADOR"].includes(staff[0].role))
       return privateJson({error:"forbidden"},403);
     const {url}=supabaseSettings();
-    const key=process.env.CRM_SUPABASE_SERVICE_ROLE_KEY??"";
+    const key = (process.env.CRM_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)?.trim() ?? "";
     if(key.length<30)return privateJson({error:"backend_not_configured"},503);
-    // Database RPC performs atomic status + flag reset + audit, and never deletes records.
     const response=await fetch(url+"/rest/v1/rpc/crm_admin_set_tenant_suspension",{
       method:"POST",cache:"no-store",signal:AbortSignal.timeout(9000),
       headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
@@ -33,7 +32,6 @@ export async function POST(request:NextRequest) {
     });
     if(!response.ok)return privateJson({error:"tenant_suspension_failed"},409);
     const status=await response.json() as unknown;
-    if(status!=="inactive"&&status!=="suspended")return privateJson({error:"status_unconfirmed"},503);
-    return privateJson({updated:true,status});
-  }catch{return privateJson({error:"tenant_service_unavailable"},503);}
+    return privateJson({tenantId:id,status});
+  } catch { return privateJson({error:"suspension_unavailable"},503); }
 }

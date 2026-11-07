@@ -49,8 +49,11 @@ export function getAiConfig(): AiConfig {
 }
 
 export function getAgentConfig(): AgentConfig {
-  const allowed = read("AI_TEST_ALLOWED_NUMBER").replace(/\D/g, "");
-  if (!/^\d{10,15}$/.test(allowed)) throw new Error("AI_TEST_ALLOWED_NUMBER inválido");
+  const rawAllowed = (process.env.AI_TEST_ALLOWED_NUMBER ?? "").trim();
+  const allowed = (rawAllowed === "*" || rawAllowed === "all" || rawAllowed === "" || rawAllowed === "none")
+    ? "*"
+    : rawAllowed.replace(/\D/g, "");
+  if (allowed !== "*" && !/^\d{10,15}$/.test(allowed)) throw new Error("AI_TEST_ALLOWED_NUMBER inválido");
   const webhookSecret = read("CRM_WEBHOOK_SECRET");
   if (webhookSecret.length < 32) throw new Error("CRM_WEBHOOK_SECRET precisa ter pelo menos 32 caracteres");
   const redisUrl = read("CRM_REDIS_URL");
