@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 const COOKIE = "nw_crm_session";
 type SupaUser = { id?: string; email?: string };
 export function supabaseSettings() {
-  const url = process.env.CRM_SUPABASE_URL?.trim() ?? "";
-  const key = process.env.CRM_SUPABASE_PUBLISHABLE_KEY?.trim() ?? "";
+  const url = (process.env.CRM_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)?.trim() ?? "";
+  const key = (process.env.CRM_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY)?.trim() ?? "";
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url) || !key || key.length < 20)
     throw new Error("crm_supabase_not_configured");
   return { url: url.replace(/\/$/, ""), key };
@@ -35,4 +35,17 @@ export async function supabaseRows<T>(path: string, token: string): Promise<T> {
 }
 export function privateJson(value: unknown, status = 200) {
   return Response.json(value,{status,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+}
+export function isAllowedOrigin(origin: string | null, requestUrl: string): boolean {
+  if (!origin) return true;
+  try {
+    const o = new URL(origin);
+    const u = new URL(requestUrl);
+    if (o.origin === u.origin) return true;
+    const localHosts = ["localhost", "127.0.0.1", "host.docker.internal", "0.0.0.0"];
+    if (o.protocol === u.protocol && o.port === u.port && localHosts.includes(o.hostname) && localHosts.includes(u.hostname)) return true;
+    return o.origin === u.origin;
+  } catch {
+    return false;
+  }
 }

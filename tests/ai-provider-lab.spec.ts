@@ -1,10 +1,18 @@
 import { test, expect } from "@playwright/test";
 
-test("Master AI provider catalog is visible with an honest locked lab",async({page})=>{
+// Each public-screen test owns the unauthenticated browser state.
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/crm/auth/session", async route => {
+    if (route.request().method() === "GET") return route.fulfill({json:{authenticated:false}});
+    await route.fallback();
+  });
+});
+
+test("Master AI provider catalog redirects unauthenticated users without exposing the lab",async({page})=>{
  await page.goto("/admin/ai-providers");
- await expect(page.getByRole("heading",{name:"Central de Provedores de IA"})).toBeVisible();
- await expect(page.getByText("Laboratório protegido")).toBeVisible();
- await expect(page.getByText("Provedores abaixo são opções pesquisadas")).toBeVisible();
+ await expect(page.getByRole("heading",{name:"Acesso ao Painel Master"})).toBeVisible();
+ await expect(page).toHaveURL(/\/\?error=unauthorized_admin$/);
+ await expect(page.getByRole("navigation",{name:"Menu do Master"})).toHaveCount(0);
  await expect(page.getByRole("button",{name:"Testar resposta sem WhatsApp"})).toHaveCount(0);
 });
 test("Master AI provider APIs reject unauthenticated access",async({request})=>{
@@ -26,7 +34,7 @@ test("Master lab text test rejects cross-site requests",async({request})=>{
 for(const width of [360,390,768,1366]){
  test(`AI providers Master view ${width} has no horizontal overflow`,async({page})=>{
   await page.setViewportSize({width,height:850});await page.goto("/admin/ai-providers");
-  await expect(page.getByRole("heading",{name:"Central de Provedores de IA"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Acesso ao Painel Master"})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1)).toBe(false);
  });
 }

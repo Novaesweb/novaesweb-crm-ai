@@ -17,7 +17,7 @@ test("uses explicitly configured fallback model on 429, never sends or exposes c
     return Response.json({ choices: [{ message: { content: "Atendimento pronto." } }] });
   }) as typeof fetch;
   try {
-    assert.equal(await generateAnswer("Ola", cfg), "Atendimento pronto.");
+    assert.equal(await generateAnswer("Ola", cfg, {allowFallback:true}), "Atendimento pronto.");
     assert.deepEqual(called, ["route1", "route2"]);
   } finally {
     globalThis.fetch = previous;
@@ -39,4 +39,10 @@ test("does not fallback on unauthorized key", async () => {
     if (old === undefined) delete process.env.AI_FALLBACK_MODELS;
     else process.env.AI_FALLBACK_MODELS = old;
   }
+});
+
+test("Start never tries fallback even when the environment advertises other models",async()=>{
+ const old=globalThis.fetch;const models:string[]=[];
+ globalThis.fetch=async(_url,init)=>{models.push(JSON.parse(String(init?.body)).model);return new Response("unavailable",{status:429});};
+ try{await assert.rejects(generateAnswer("Oi",cfg,{allowFallback:false,fallbackModel:"route2"}));assert.deepEqual(models,["route1"]);}finally{globalThis.fetch=old;}
 });

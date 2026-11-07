@@ -1,11 +1,13 @@
 import { NextRequest } from "next/server";
-import { privateJson, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
+import { requireTenantFeature } from "@/lib/crm/plans";
+import { authorizeCrmTenant } from "@/lib/crm/tenant-access";
+import { isAllowedOrigin, privateJson, supabaseSettings } from "@/lib/crm/supabase-server";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(request:NextRequest) {
   const origin=request.headers.get("origin");
-  if(origin && origin !== new URL(request.url).origin) return privateJson({error:"forbidden"},403);
+  if (!isAllowedOrigin(origin, request.url)) return privateJson({error:"forbidden"},403);
   if(!request.headers.get("content-type")?.includes("application/json"))return privateJson({error:"json_required"},415);
   if(Number(request.headers.get("content-length")??0)>1500)return privateJson({error:"request_too_large"},413);
   let body:unknown;
@@ -13,23 +15,25 @@ export async function POST(request:NextRequest) {
   const input=body && typeof body==="object"?body as Record<string,unknown>:{};
   const tenant=typeof input.tenantId==="string"?input.tenantId:"";
   const phone=typeof input.phone==="string"?input.phone.replace(/\D/g,""):"";
-  const name=typeof input.name==="string"?input.name.trim():"";
-  if(!UUID.test(tenant)||!/^[0-9]{10,15}$/.test(phone)||name.length>160)
-    return privateJson({error:"invalid_contact"},400);
+  const name=typeof input.name==="string"?input.name.trim().slice(0,160):null;
+  if (!UUID.test(tenant) || phone.length<10 || phone.length>15) return privateJson({error:"invalid_input"},400);
   try {
-    const user=await verifyOperator();
-    if(!user)return privateJson({error:"unauthorized"},401);
-    const {url,key}=supabaseSettings();
-    // RLS enforces both membership role and active tenant; no elevated key is involved.
-    const created=await fetch(url+"/rest/v1/crm_contacts",{
-      method:"POST",cache:"no-store",signal:AbortSignal.timeout(7000),
-      headers:{apikey:key,Authorization:"Bearer "+user.token,
-        "Content-Type":"application/json",Prefer:"return=representation"},
-      body:JSON.stringify({tenant_id:tenant,phone,display_name:name||null})
+    const access=await authorizeCrmTenant(request,tenant,["owner","admin","agent"]);
+    if (!access) return privateJson({error:"forbidden"},403);
+    const featureGuard = await requireTenantFeature(tenant, "human_handoff");
+    if (!featureGuard.allowed) return privateJson({ error: featureGuard.errorCode, state: featureGuard.state, message: featureGuard.message }, featureGuard.statusHttp);
+    const {url}=supabaseSettings();
+    const serviceKey=process.env.CRM_SUPABASE_SERVICE_ROLE_KEY??"";
+    if (serviceKey.length<30) return privateJson({error:"crm_not_ready"},503);
+    const rpc=await fetch(url+"/rest/v1/rpc/crm_create_contact",{
+      method:"POST",headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,"Content-Type":"application/json"},
+      body:JSON.stringify({p_tenant:tenant,p_phone:phone,p_name:name}),cache:"no-store"
     });
-    if(created.status===409)return privateJson({error:"contact_exists"},409);
-    if(!created.ok)return privateJson({error:"contact_denied_or_unavailable"},403);
-    const rows=await created.json() as {id:string}[];
-    return privateJson({id:rows[0]?.id??null,created:true},201);
-  } catch { return privateJson({error:"contact_service_unavailable"},503); }
+    if (!rpc.ok) {
+      if (rpc.status===409) return privateJson({error:"already_exists"},409);
+      return privateJson({error:"insert_failed"},503);
+    }
+    const contactId=await rpc.json();
+    return privateJson({created:true,id:contactId},201);
+  } catch { return privateJson({error:"service_unavailable"},503); }
 }

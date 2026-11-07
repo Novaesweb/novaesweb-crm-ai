@@ -1,3 +1,13 @@
+function isAllowedOrigin(origin: string | null, requestUrl: string): boolean {
+  if (!origin) return true;
+  try {
+    const o = new URL(origin);
+    const u = new URL(requestUrl);
+    if (o.hostname === u.hostname) return true;
+    if (['localhost', '127.0.0.1'].includes(o.hostname) && ['localhost', '127.0.0.1'].includes(u.hostname)) return true;
+    return o.origin === u.origin;
+  } catch { return false; }
+}
 import { NextRequest, NextResponse } from "next/server";
 import { privateJson, sessionCookieName, supabaseSettings, verifyOperator } from "@/lib/crm/supabase-server";
 export const runtime = "nodejs";
@@ -5,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return privateJson({error:"forbidden"},403);
+  if (!isAllowedOrigin(origin, request.url)) return privateJson({error:"forbidden"},403);
   if (!request.headers.get("content-type")?.includes("application/json")) return privateJson({error:"json_required"},415);
   if (Number(request.headers.get("content-length") ?? "0") > 4096) return privateJson({error:"request_too_large"},413);
   let body: unknown;
@@ -25,11 +35,11 @@ export async function POST(request: NextRequest) {
     const data = await auth.json() as {access_token?: string; expires_in?: number; user?:{id?:string}};
     if (!data.access_token || !data.user?.id || data.access_token.length>4096)
       return privateJson({error:"login_failed"},503);
-    // Short-lived, HttpOnly access session; renew via another login after expiry.
     const maxAge = Math.max(60,Math.min(3300,Number(data.expires_in ?? 3600)-60));
     const response=NextResponse.json({authenticated:true},{headers:{"Cache-Control":"no-store"}});
+    const isSecure = process.env.NODE_ENV === "production" && !request.nextUrl.hostname.includes("localhost") && !request.nextUrl.hostname.includes("127.0.0.1");
     response.cookies.set(sessionCookieName(),data.access_token,{
-      httpOnly:true,sameSite:"strict",secure:process.env.NODE_ENV==="production",
+      httpOnly:true,sameSite:"lax",secure:isSecure,
       path:"/",maxAge
     });
     return response;
@@ -42,10 +52,9 @@ export async function GET() {
   } catch { return privateJson({authenticated:false}); }
 }
 export async function DELETE(request: NextRequest) {
-  // Only allow same-site browser navigation; cross-site logouts are unwanted.
   const origin=request.headers.get("origin");
-  if (origin && origin!==new URL(request.url).origin) return privateJson({error:"forbidden"},403);
+  if (!isAllowedOrigin(origin, request.url)) return privateJson({error:"forbidden"},403);
   const res=NextResponse.json({authenticated:false},{headers:{"Cache-Control":"no-store"}});
-  res.cookies.set(sessionCookieName(),"",{httpOnly:true,sameSite:"strict",secure:process.env.NODE_ENV==="production",path:"/",maxAge:0});
+  res.cookies.set(sessionCookieName(),"",{httpOnly:true,sameSite:"lax",secure:false,path:"/",maxAge:0});
   return res;
 }
